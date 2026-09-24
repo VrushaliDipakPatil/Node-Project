@@ -7,15 +7,17 @@ const server = http.createServer((req, res) => {
 
   if (url === "/") {
     res.setHeader("Content-Type", "text/html");
-    res.end(
-      `
+    fs.readFile("formValues.txt", (err, data) => {
+      res.end(
+        `<h1>${data.toString()}</h1>
             <form action="/message" method="POST">
             <label>Name:</label>
             <input type="text" name="username"></input>
             <button type="submit">Add</button>
             </form>
             `,
-    );
+      );
+    });
   } else {
     if (req.url === "/message") {
       res.setHeader("Content-Type", "text/html");
@@ -39,16 +41,13 @@ const server = http.createServer((req, res) => {
           res.end();
         });
       });
-    }
-    else{
-        if(req.url==="/read"){
-            fs.readFile("formValues.txt", (err, data) => {
-                console.log(data.toString());
-                res.end(
-                    `<h1>${data.toString()}</h1>`
-                );
-            });
-        }
+    } else {
+      if (req.url === "/read") {
+        fs.readFile("formValues.txt", (err, data) => {
+          console.log(data.toString());
+          res.end(`<h1>${data.toString()}</h1>`);
+        });
+      }
     }
   }
 });
