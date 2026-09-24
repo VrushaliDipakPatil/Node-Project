@@ -52,7 +52,7 @@ const requestHandler = (req, res) => {
 }
 
 const anotherFunction=()=>{
-    console.log("This is another function");
+    console.log("This is another function to check nodemon");
 }
 
 // module.exports = {handler:requestHandler,testFunction:anotherFunction};
