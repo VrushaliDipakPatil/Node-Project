@@ -1,13 +1,14 @@
 const express = require("express");
 
 const app = express();
-const ordersRouter = require("./routes/orders");
-const usersRouter = require("./routes/users");
-const booksRouter = require("./routes/books");
+const studentsRouter = require("./routes/students");
+const coursesRouter = require("./routes/courses");
+const homeRouter = require("./routes/home");
 
-app.use("/orders", ordersRouter);
-app.use("/users", usersRouter);
-app.use("/books", booksRouter);
+app.use("/students", studentsRouter);
+app.use("/courses", coursesRouter);
+app.use("/home", homeRouter);
+
 
 
 
