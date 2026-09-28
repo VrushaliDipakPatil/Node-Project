@@ -1,16 +1,14 @@
 const express = require("express");
 
 const app = express();
-const studentsRouter = require("./routes/students");
-const coursesRouter = require("./routes/courses");
-const homeRouter = require("./routes/home");
 
-app.use("/students", studentsRouter);
-app.use("/courses", coursesRouter);
-app.use("/home", homeRouter);
+const userRoutes=require("./routes/userRoutes");
+const productRoutes=require("./routes/productRoutes");
+const cartRoutes=require("./routes/cartRoutes");
 
-
-
+app.use("/products", productRoutes);
+app.use("/users", userRoutes);
+app.use("/carts", cartRoutes);
 
 app.use((req,res)=>{
     res.status(404).send("<h1>404 - Page Not Found</h1>");
