@@ -14,8 +14,9 @@ const getProductById=(req, res) => {
 }
 
 const createProduct=(req, res) => {
-    const result= productService.createProduct();
-    res.send(result);
+    const productName = req.body.productName;
+    const result= productService.createProduct(productName);
+    res.json({ value: result });
 };
 
 module.exports = {

@@ -6,8 +6,8 @@ const getProductById=(productId) => {
     return 'Fetching product with ID: ' + productId;
 }
 
-const createProduct=() => {
-    return 'Creating a new product.';
+const createProduct=(productName) => {
+    return 'Creating a new product: ' + productName;
 };
 
 module.exports = {

@@ -8,6 +8,9 @@ const userRoutes=require("./routes/userRoutes");
 const productRoutes=require("./routes/productRoutes");
 const cartRoutes=require("./routes/cartRoutes");
 
+app.use(express.static("public"));
+app.use(express.json());
+
 app.use("/products", productRoutes);
 app.use("/users", userRoutes);
 app.use("/carts", cartRoutes);
