@@ -1,6 +1,8 @@
 const express = require('express');
 const connection = require('./utils/db-connection');
 const studentRoutes = require('./routes/studentsRoutes');
+const busesRoutes = require('./routes/busesRoutes');
+const userRoutes = require('./routes/userRoutes');
 const app = express();
 const port = 3000;
 
@@ -11,6 +13,8 @@ app.get('/', (req, res) => {
 });
 
 app.use("/students", studentRoutes);
+app.use("/users", userRoutes);
+app.use("/buses", busesRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
