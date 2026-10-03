@@ -1,9 +1,40 @@
 const db = require('../utils/db-connection');
 
+const getEntries= (req, res) => {
+  const selectQuery = 'SELECT * FROM Students';
+  db.execute(selectQuery, (err, results) => {
+    if (err) {
+      console.error('Error fetching data:', err);
+      res.status(500).send(err.message);
+      db.end();
+      return;
+    }
+    res.status(200).send(results);
+  });
+};
+
+const getEntriesById = (req, res) => {
+  const { id } = req.params;
+  const selectQuery = 'SELECT * FROM Students WHERE id = ?';
+  db.execute(selectQuery, [id], (err, results) => {
+    if (err) {
+      console.error('Error fetching data:', err);
+      res.status(500).send(err.message);
+      db.end();
+      return;
+    }
+    if (results.length === 0) {
+      res.status(404).send({ message: `Student with id ${id} not found` });
+      return;
+    }
+    res.status(200).send(results[0]);
+  });
+};
+
 const addEntries = (req, res) => {
- const{name, email} = req.body;
- const insertQuery = 'INSERT INTO Students (name, email) VALUES (?, ?)';
- db.execute(insertQuery, [name, email], (err) => {
+ const{name, email, age} = req.body;
+ const insertQuery = 'INSERT INTO Students (name, email, age) VALUES (?, ?, ?)';
+ db.execute(insertQuery, [name, email, age], (err) => {
    if (err) {
      console.error('Error inserting data:', err);
      res.status(500).send(err.message);
@@ -17,9 +48,9 @@ const addEntries = (req, res) => {
 
 const updateEntries = (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
-  const updateQuery = 'UPDATE Students SET name = ? WHERE id = ?';
-  db.execute(updateQuery, [name, id], (err, result) => {
+  const { name, email, age } = req.body;
+  const updateQuery = 'UPDATE Students SET name = ?, email = ?, age = ? WHERE id = ?';
+  db.execute(updateQuery, [name, email, age, id], (err, result) => {
     if (err) {
       console.error('Error updating data:', err);
       res.status(500).send(err.message);
@@ -54,4 +85,4 @@ const deleteEntries = (req, res) => {
   });
 };
 
-module.exports = { addEntries, updateEntries, deleteEntries };
+module.exports = {getEntries, addEntries, updateEntries, deleteEntries, getEntriesById}; 

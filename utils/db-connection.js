@@ -3,7 +3,7 @@ const mysql = require("mysql2");
 const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root",
+  password: "Vrush@li1097",
   database: "testdb",
 });
 
@@ -41,6 +41,22 @@ connection.connect((err) => {
       return;
     }
     console.log("Table buses created successfully");
+  });
+
+  const studentCreationQuery =`create table IF NOT EXISTS Students(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(20) NOT NULL,
+  email VARCHAR(20) NOT NULL UNIQUE,
+  age INT NOT NULL
+)`;
+
+  connection.execute(studentCreationQuery, (err) => {
+    if (err) {
+      console.error("Error creating table:", err);
+      connection.end();
+      return;
+    }
+    console.log("Table students created successfully");
   });
 });
 
