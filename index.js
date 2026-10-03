@@ -1,10 +1,12 @@
 const express = require('express');
-const connection = require('./utils/db-connection');
+const db = require('./utils/db-connection');
 const studentRoutes = require('./routes/studentsRoutes');
 const busesRoutes = require('./routes/busesRoutes');
 const userRoutes = require('./routes/userRoutes');
 const app = express();
 const port = 3000;
+
+const studentModel = require('./models/students');
 
 app.use(express.json());
 
@@ -16,6 +18,11 @@ app.use("/students", studentRoutes);
 app.use("/users", userRoutes);
 app.use("/buses", busesRoutes);
 
-app.listen(port, () => {
+db.sync({force:true}).then(() => {
+  app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+}).catch((err) => {
+  console.error('Error synchronizing database:', err);
+});
+
