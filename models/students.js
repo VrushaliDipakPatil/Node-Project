@@ -1,7 +1,7 @@
-const { Sequalize, DataTypes } = requirse("sequelize");
+const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../utils/db-connection");
 
-const Student = sequelize.define("Student", {
+const Students = sequelize.define("Student", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -23,4 +23,4 @@ const Student = sequelize.define("Student", {
   },
 });
 
-module.exports = Student;
+module.exports = Students;

@@ -18,7 +18,7 @@ app.use("/students", studentRoutes);
 app.use("/users", userRoutes);
 app.use("/buses", busesRoutes);
 
-db.sync({force:true}).then(() => {
+db.sync({force:false}).then(() => {
   app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
