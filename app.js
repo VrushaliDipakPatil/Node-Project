@@ -7,8 +7,9 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
-app.use(cors());
+require('./models'); // Import the models to establish relationships
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -19,7 +20,7 @@ app.use("/students", studentRoutes);
 app.use("/users", userRoutes);
 app.use("/buses", busesRoutes);
 
-db.sync({force:false}).then(() => {
+db.sync({force:true}).then(() => {
   app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
