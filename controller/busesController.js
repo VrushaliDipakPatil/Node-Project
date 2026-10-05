@@ -1,5 +1,7 @@
 const db= require('../utils/db-connection');
 const Buses = require('../models/buses');
+const Bookings = require('../models/bookings');
+const Users = require('../models/users');
 const { Op } = require('sequelize');
 
 const addBuses = async(req,res)=>{
@@ -35,5 +37,29 @@ const getBusesasperAvailableSeats = async(req,res)=>{
     }
 };
 
+const getBusBookings = async (req, res) => {
+    try {
+        const { id } = req.params;
 
-module.exports = {addBuses, getBusesasperAvailableSeats};
+        const bookings = await Bookings.findAll({
+            where: {
+                BusId: id
+            },
+            include: [
+                {
+                    model: Users
+                }
+            ]
+        });
+
+        res.status(200).send(bookings);
+
+    } catch (error) {
+        console.error('Error fetching bus bookings:', error);
+        res.status(500).send({
+            message: 'Error fetching bus bookings'
+        });
+    }
+};
+
+module.exports = {addBuses, getBusesasperAvailableSeats,getBusBookings};
