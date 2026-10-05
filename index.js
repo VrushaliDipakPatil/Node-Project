@@ -3,10 +3,11 @@ const db = require('./utils/db-connection');
 const studentRoutes = require('./routes/studentsRoutes');
 const busesRoutes = require('./routes/busesRoutes');
 const userRoutes = require('./routes/userRoutes');
+const cors = require('cors');
 const app = express();
 const port = 3000;
 
-const studentModel = require('./models/students');
+app.use(cors());
 
 app.use(express.json());
 

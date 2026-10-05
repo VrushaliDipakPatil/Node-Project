@@ -3,9 +3,10 @@ const Users = require('../models/users');
 
 const addUser = async(req, res) => {
   try{
-const { name, email } = req.body;
+const { name,phone, email } = req.body;
 const user = await Users.create({
   name: name,
+  phone: phone,
   email: email
 });
 res.status(200).send({ message: `User ${name} added successfully` });
@@ -26,4 +27,35 @@ const fetchUsers = async(req, res) => {
   }
 };
 
-module.exports = { addUser, fetchUsers };
+const updateUser = async(req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, email } = req.body;
+    const user = await Users.findByPk(id);
+    if (!user) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+    await user.update({ name, phone, email });
+    res.status(200).send({ message: `User ${name} updated successfully` });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send({ message: 'Error updating user' });
+  }
+};
+
+const deleteUser = async(req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await Users.findByPk(id);
+    if (!user) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+    await user.destroy();
+    res.status(200).send({ message: `User ${user.name} deleted successfully` });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).send({ message: 'Error deleting user' });
+  }
+};
+
+module.exports = { addUser, fetchUsers, updateUser, deleteUser };

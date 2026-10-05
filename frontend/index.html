@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Booking Appointment</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Booking Appointment</h1>
+
+        <form id="appointmentForm">
+
+            <input
+                type="text"
+                id="name"
+                placeholder="Enter Name"
+                required
+            >
+
+            <input
+                type="tel"
+                id="phone"
+                placeholder="Enter Phone Number"
+                required
+            >
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter Email"
+                required
+            >
+
+            <button type="submit" id="submitBtn">
+                Book Appointment
+            </button>
+
+        </form>
+
+        <h2>Booked Appointments</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="appointmentList">
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
