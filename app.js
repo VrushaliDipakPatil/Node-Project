@@ -3,6 +3,7 @@ const db = require('./utils/db-connection');
 const studentRoutes = require('./routes/studentsRoutes');
 const busesRoutes = require('./routes/busesRoutes');
 const userRoutes = require('./routes/userRoutes');
+const coursesRoutes = require('./routes/coursesRoutes');
 const cors = require('cors');
 const app = express();
 const port = 3000;
@@ -19,8 +20,9 @@ app.get('/', (req, res) => {
 app.use("/students", studentRoutes);
 app.use("/users", userRoutes);
 app.use("/buses", busesRoutes);
+app.use("/courses", coursesRoutes);
 
-db.sync({force:true}).then(() => {
+db.sync({force:false}).then(() => {
   app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

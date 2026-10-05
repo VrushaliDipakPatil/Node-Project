@@ -58,6 +58,8 @@ const idCard = await IdentityCard.create({
   }
 };
 
+
+
 const updateEntries = async (req, res) => {
   try {
     const { id } = req.params;
