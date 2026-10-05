@@ -1,32 +1,39 @@
 const db= require('../utils/db-connection');
+const Buses = require('../models/buses');
+const { Op } = require('sequelize');
 
-const addBuses = (req,res)=>{
-    const {busNumber, totalSeats, availableSeats} = req.body;
-    const insertQuery = 'INSERT INTO Buses (busNumber, totalSeats, availableSeats) VALUES (?, ?, ?)';
-    db.execute(insertQuery, [busNumber, totalSeats, availableSeats], (err)=>{
-        if(err){
-            console.error('Error inserting data:', err);
-            res.status(500).send(err.message);
-            db.end();
-            return;
-        }
-        console.log('Data inserted successfully');
-        res.status(200).send({message: `Bus ${busNumber} added successfully`});
-    });
+const addBuses = async(req,res)=>{
+    try{
+const {busNumber, totalSeats, availableSeats} = req.body;
+const bus = await Buses.create({
+  busNumber: busNumber,
+  totalSeats: totalSeats,
+  availableSeats: availableSeats
+});
+res.status(200).send({ message: `Bus ${busNumber} added successfully` });
+    }catch (error) {
+        console.error('Error adding bus:', error);
+        res.status(500).send({ message: 'Error adding bus' });
+    }
+
 }
 
-const getBusesasperAvailableSeats = (req,res)=>{
-    const {availableSeats} = req.params;
-    const selectQuery = 'SELECT * FROM Buses WHERE availableSeats >= ?';   
-    db.execute(selectQuery, [availableSeats], (err, results)=>{
-        if(err){
-            console.error('Error fetching data:', err);
-            res.status(500).send(err.message);
-            db.end();
-            return;
-        }
-        res.status(200).send(results);
-    });
-}
+const getBusesasperAvailableSeats = async(req,res)=>{
+    try {
+        const {availableSeats} = req.params;
+        const buses = await Buses.findAll({
+            where: {
+                availableSeats: {
+                    [Op.gte]: availableSeats
+                }
+            }
+        });
+        res.status(200).send(buses);
+    } catch (error) {
+        console.error('Error fetching buses:', error);
+        res.status(500).send({ message: 'Error fetching buses' });
+    }
+};
+
 
 module.exports = {addBuses, getBusesasperAvailableSeats};

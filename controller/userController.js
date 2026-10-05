@@ -1,31 +1,29 @@
 const db = require('../utils/db-connection');
+const Users = require('../models/users');
 
-const addUser = (req, res) => {
-  const { name, email } = req.body;
-  const insertQuery = 'INSERT INTO Users (name, email) VALUES (?, ?)';  
-  db.execute(insertQuery, [name, email], (err) => {
-    if (err) {
-      console.error('Error inserting data:', err);
-      res.status(500).send(err.message);
-      db.end();
-      return;
-    }
-    console.log('Data inserted successfully');
-    res.status(200).send({ message: `User ${name} added successfully` });
-  });
+const addUser = async(req, res) => {
+  try{
+const { name, email } = req.body;
+const user = await Users.create({
+  name: name,
+  email: email
+});
+res.status(200).send({ message: `User ${name} added successfully` });
+  }catch (error) {
+    console.error('Error adding user:', error);
+    res.status(500).send({ message: 'Error adding user' });
+  }
+
 };
 
-const fetchUsers = (req, res) => {
-  const selectQuery = 'SELECT * FROM Users';
-  db.execute(selectQuery, (err, results) => {
-    if (err) {
-      console.error('Error fetching users:', err);
-      res.status(500).send(err.message);
-      db.end();
-      return;
-    }
-    res.status(200).send(results);
-  });
+const fetchUsers = async(req, res) => {
+  try {
+    const users = await Users.findAll();
+    res.status(200).send(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).send({ message: 'Error fetching users' });
+  }
 };
 
 module.exports = { addUser, fetchUsers };
