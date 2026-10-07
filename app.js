@@ -5,6 +5,7 @@ const busesRoutes = require('./routes/busesRoutes');
 const userRoutes = require('./routes/userRoutes');
 const coursesRoutes = require('./routes/coursesRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const expenseRoutes = require('./routes/expenseRoute');
 const cors = require('cors');
 const app = express();
 const port = 3000;
@@ -23,6 +24,7 @@ app.use("/users", userRoutes);
 app.use("/buses", busesRoutes);
 app.use("/courses", coursesRoutes);
 app.use("/bookings", bookingRoutes);
+app.use("/expenses", expenseRoutes);
 
 db.sync({force:false}).then(() => {
   app.listen(port, () => {

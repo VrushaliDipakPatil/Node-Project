@@ -1,177 +1,129 @@
-const API_URL = "http://localhost:3000/users";
+const form = document.getElementById("expenseForm");
+const amount = document.getElementById("amount");
+const description = document.getElementById("description");
+const category = document.getElementById("category");
+const expenseList = document.getElementById("expenseList");
 
-const appointmentForm = document.getElementById("appointmentForm");
-const appointmentList = document.getElementById("appointmentList");
-const submitBtn = document.getElementById("submitBtn");
+let editId = null;
 
-let editingUserId = null;
+// Load Data
+window.onload = function () {
+    displayExpenses();
+};
 
+// Form Submit
+form.addEventListener("submit", function (e) {
 
-// GET USERS
-async function fetchUsers() {
+    e.preventDefault();
 
-    try {
-
-        const response = await fetch(API_URL);
-
-        const users = await response.json();
-
-        appointmentList.innerHTML = "";
-
-        users.forEach(user => {
-
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${user.id}</td>
-                <td>${user.name}</td>
-                <td>${user.phone}</td>
-                <td>${user.email}</td>
-
-                <td>
-                    <button
-                        class="edit-btn"
-                        onclick="editUser(${user.id}, '${user.name}', '${user.phone}', '${user.email}')">
-                        Edit
-                    </button>
-
-                    <button
-                        class="delete-btn"
-                        onclick="deleteUser(${user.id})">
-                        Delete
-                    </button>
-                </td>
-            `;
-
-            appointmentList.appendChild(row);
-
-        });
-
-    } catch (error) {
-
-        console.error("Error fetching users:", error);
-
-    }
-}
-
-
-// ADD / UPDATE USER
-appointmentForm.addEventListener("submit", async (event) => {
-
-    event.preventDefault();
-
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const email = document.getElementById("email").value;
-
-    const userData = {
-        name,
-        phone,
-        email
+    const expense = {
+        id: editId ? editId : Date.now(),
+        amount: amount.value,
+        description: description.value,
+        category: category.value
     };
 
-    try {
+    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-        let response;
+    if (editId) {
 
-        if (editingUserId === null) {
+        expenses = expenses.map(item =>
+            item.id === editId ? expense : item
+        );
 
-            // ADD USER
-            response = await fetch(`${API_URL}/add`, {
+        editId = null;
 
-                method: "POST",
+    } else {
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(userData)
-
-            });
-
-        } else {
-
-            // UPDATE USER
-            response = await fetch(`${API_URL}/${editingUserId}`, {
-
-                method: "PUT",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(userData)
-
-            });
-
-        }
-
-        const result = await response.json();
-
-        console.log(result);
-
-        appointmentForm.reset();
-
-        editingUserId = null;
-
-        submitBtn.textContent = "Book Appointment";
-
-        fetchUsers();
-
-    } catch (error) {
-
-        console.error("Error saving user:", error);
+        expenses.push(expense);
 
     }
+
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+
+    form.reset();
+
+    displayExpenses();
 
 });
 
 
-// EDIT USER
-function editUser(id, name, phone, email) {
+// Display Expenses
 
-    document.getElementById("name").value = name;
-    document.getElementById("phone").value = phone;
-    document.getElementById("email").value = email;
+function displayExpenses() {
 
-    editingUserId = id;
+    expenseList.innerHTML = "";
 
-    submitBtn.textContent = "Update Appointment";
+    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+    expenses.forEach(expense => {
+
+        const li = document.createElement("li");
+
+        li.className = "list-group-item";
+
+        li.innerHTML = `
+
+            <span>
+                <strong>₹${expense.amount}</strong>
+                -
+                ${expense.category}
+                -
+                ${expense.description}
+            </span>
+
+            <div class="action-buttons">
+
+                <button
+                    class="btn btn-warning btn-sm"
+                    onclick="editExpense(${expense.id})">
+                    Edit
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="deleteExpense(${expense.id})">
+                    Delete
+                </button>
+
+            </div>
+
+        `;
+
+        expenseList.appendChild(li);
+
+    });
 
 }
 
 
-// DELETE USER
-async function deleteUser(id) {
+// Delete
 
-    const confirmDelete = confirm(
-        "Are you sure you want to delete this appointment?"
-    );
+function deleteExpense(id) {
 
-    if (!confirmDelete) {
-        return;
-    }
+    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-    try {
+    expenses = expenses.filter(item => item.id !== id);
 
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE"
-        });
+    localStorage.setItem("expenses", JSON.stringify(expenses));
 
-        const result = await response.json();
-
-        console.log(result);
-
-        fetchUsers();
-
-    } catch (error) {
-
-        console.error("Error deleting user:", error);
-
-    }
+    displayExpenses();
 
 }
 
 
-// LOAD USERS WHEN PAGE OPENS
-fetchUsers();
+// Edit
+
+function editExpense(id) {
+
+    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+    const expense = expenses.find(item => item.id === id);
+
+    amount.value = expense.amount;
+    description.value = expense.description;
+    category.value = expense.category;
+
+    editId = id;
+
+}
