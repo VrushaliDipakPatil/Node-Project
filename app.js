@@ -6,6 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const coursesRoutes = require('./routes/coursesRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const expenseRoutes = require('./routes/expenseRoute');
+const storeRoutes = require('./routes/storeRoutes');
 const cors = require('cors');
 const app = express();
 const port = 3000;
@@ -25,6 +26,7 @@ app.use("/buses", busesRoutes);
 app.use("/courses", coursesRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/expenses", expenseRoutes);
+app.use("/store", storeRoutes);
 
 db.sync({force:true}).then(() => {
   app.listen(port, () => {

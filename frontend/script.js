@@ -1,380 +1,271 @@
-const form = document.getElementById("expenseForm");
-
-const amount = document.getElementById("amount");
-const description = document.getElementById("description");
-const category = document.getElementById("category");
-
-const expenseList = document.getElementById("expenseList");
-
-const submitButton = document.getElementById("submitButton");
-
-const message = document.getElementById("message");
+const API_URL = "http://localhost:3000/store";
 
 
-// Backend URL
-const API_URL = "http://localhost:3000/expenses";
+const itemForm = document.getElementById("itemForm");
+
+itemForm.addEventListener("submit", async function (event) {
+
+event.preventDefault();
+
+const name = document.getElementById("name").value;
+const description = document.getElementById("description").value;
+const price = Number(document.getElementById("price").value);
+const quantity = Number(document.getElementById("quantity").value);
 
 
-// Used when editing an expense
-let editId = null;
+const item = {
+    name: name,
+    description: description,
+    price: price,
+    quantity: quantity
+};
 
 
-// Load expenses when page opens
-document.addEventListener("DOMContentLoaded", function () {
+try {
 
-    displayExpenses();
+    const response = await fetch(`${API_URL}/add`, {
 
-});
+        method: "POST",
 
+        headers: {
+            "Content-Type": "application/json"
+        },
 
-// --------------------------------------------------
-// FORM SUBMIT
-// --------------------------------------------------
+        body: JSON.stringify(item)
 
-form.addEventListener("submit", async function (event) {
-
-    event.preventDefault();
+    });
 
 
-    const expense = {
-
-        amount: Number(amount.value),
-
-        description: description.value,
-
-        category: category.value
-
-    };
+    const data = await response.json();
 
 
-    try {
+    if (!response.ok) {
 
-        // EDIT EXPENSE
-        if (editId !== null) {
-
-            const response = await fetch(
-                `${API_URL}/${editId}`,
-                {
-                    method: "PUT",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify(expense)
-                }
-            );
-
-
-            if (!response.ok) {
-                throw new Error("Failed to update expense");
-            }
-
-
-            showMessage(
-                "Expense updated successfully!",
-                "success"
-            );
-
-
-            editId = null;
-
-            submitButton.textContent = "Add Expense";
-
-        }
-
-
-        // ADD EXPENSE
-        else {
-
-            const response = await fetch(
-               `${API_URL}/add`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify(expense)
-                }
-            );
-
-
-            if (!response.ok) {
-                throw new Error("Failed to add expense");
-            }
-
-
-            showMessage(
-                "Expense added successfully!",
-                "success"
-            );
-
-        }
-
-
-        // Clear form
-        form.reset();
-
-
-        // Reload expenses
-        displayExpenses();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        showMessage(
-            "Something went wrong. Please try again.",
-            "danger"
+        throw new Error(
+            data.message || "Unable to add item"
         );
 
     }
 
-});
+
+    alert("Item added successfully!");
 
 
-// --------------------------------------------------
-// GET ALL EXPENSES
-// --------------------------------------------------
-
-async function displayExpenses() {
-
-    try {
-
-        const response = await fetch(API_URL);
+    itemForm.reset();
 
 
-        if (!response.ok) {
-            throw new Error("Failed to fetch expenses");
-        }
+    // Refresh the item list
+    loadItems();
 
 
-        const expenses = await response.json();
+} catch (error) {
 
+    console.error(error);
 
-        expenseList.innerHTML = "";
-
-
-        // If there are no expenses
-        if (expenses.length === 0) {
-
-            expenseList.innerHTML = `
-                <li class="list-group-item text-center text-muted">
-                    No expenses found.
-                </li>
-            `;
-
-            return;
-        }
-
-
-        // Display every expense
-        expenses.forEach(function (expense) {
-
-            const li = document.createElement("li");
-
-            li.className = "list-group-item";
-
-
-            li.innerHTML = `
-
-                <div class="expense-details">
-
-                    <span class="expense-amount">
-                        ₹${expense.amount}
-                    </span>
-
-                    <span class="expense-category">
-                        ${expense.category}
-                    </span>
-
-                    <span class="expense-description">
-                        ${expense.description}
-                    </span>
-
-                </div>
-
-
-                <div class="action-buttons">
-
-                    <button
-                        class="btn btn-warning btn-sm"
-                        onclick="editExpense(${expense.id})"
-                    >
-                        Edit
-                    </button>
-
-
-                    <button
-                        class="btn btn-danger btn-sm"
-                        onclick="deleteExpense(${expense.id})"
-                    >
-                        Delete
-                    </button>
-
-                </div>
-
-            `;
-
-
-            expenseList.appendChild(li);
-
-        });
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        expenseList.innerHTML = `
-
-            <li class="list-group-item text-center text-danger">
-
-                Unable to load expenses.
-
-                <br>
-
-                Make sure your backend server is running.
-
-            </li>
-
-        `;
-
-    }
+    alert(error.message);
 
 }
 
+});
 
-// --------------------------------------------------
-// DELETE EXPENSE
-// --------------------------------------------------
 
-async function deleteExpense(id) {
+async function loadItems() {
 
-    const confirmDelete = confirm(
-        "Are you sure you want to delete this expense?"
+try {
+
+    const response = await fetch(
+        `${API_URL}/items`
     );
 
 
-    if (!confirmDelete) {
-        return;
+    const data = await response.json();
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.message || "Unable to fetch items"
+        );
+
     }
 
 
-    try {
-
-        const response = await fetch(
-            `${API_URL}/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
+    displayItems(data);
 
 
-        if (!response.ok) {
-            throw new Error("Failed to delete expense");
+} catch (error) {
+
+    console.error(error);
+
+
+    document.getElementById("itemsContainer").innerHTML = `
+
+        <p class="empty-message">
+            Unable to load store items.
+        </p>
+
+    `;
+
+}
+
+
+}
+
+
+function displayItems(items) {
+
+const container =
+    document.getElementById("itemsContainer");
+
+
+if (!items || items.length === 0) {
+
+    container.innerHTML = `
+
+        <p class="empty-message">
+            No items available.
+        </p>
+
+    `;
+
+    return;
+}
+
+
+container.innerHTML = "";
+
+
+items.forEach(function (item) {
+
+    const itemCard =
+        document.createElement("div");
+
+
+    itemCard.className = "item-card";
+
+
+    itemCard.innerHTML = `
+
+        <div class="item-name">
+            ${item.name}
+        </div>
+
+
+        <div class="item-description">
+            ${item.description}
+        </div>
+
+
+        <div class="item-details">
+
+            <div class="detail">
+                <strong>Price:</strong>
+                ₹${item.price}
+            </div>
+
+
+            <div class="detail">
+                <strong>Available:</strong>
+                ${item.quantity}
+            </div>
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                class="buy-btn"
+                onclick="buyItem(${item.id}, 1)"
+                ${item.quantity < 1 ? "disabled" : ""}
+            >
+                Buy 1
+            </button>
+
+
+            <button
+                class="buy-btn"
+                onclick="buyItem(${item.id}, 2)"
+                ${item.quantity < 2 ? "disabled" : ""}
+            >
+                Buy 2
+            </button>
+
+
+            <button
+                class="buy-btn"
+                onclick="buyItem(${item.id}, 3)"
+                ${item.quantity < 3 ? "disabled" : ""}
+            >
+                Buy 3
+            </button>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(itemCard);
+
+});
+
+
+}
+
+
+async function buyItem(id, quantityToBuy) {
+
+try {
+
+    const response = await fetch(
+        `${API_URL}/update/${id}`,
+        {
+
+            method: "PUT",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                quantity: quantityToBuy
+            })
+
         }
+    );
 
 
-        showMessage(
-            "Expense deleted successfully!",
-            "success"
-        );
+    const data = await response.json();
 
 
-        displayExpenses();
+    if (!response.ok) {
 
-
-    } catch (error) {
-
-        console.error(error);
-
-        showMessage(
-            "Unable to delete expense.",
-            "danger"
+        throw new Error(
+            data.message || "Unable to buy item"
         );
 
     }
 
-}
+
+    alert(
+        `Bought ${quantityToBuy} item(s) successfully!`
+    );
 
 
-// --------------------------------------------------
-// EDIT EXPENSE
-// --------------------------------------------------
-
-async function editExpense(id) {
-
-    try {
-
-        const response = await fetch(
-            `${API_URL}/${id}`
-        );
+    // Fetch updated quantity from backend
+    loadItems();
 
 
-        if (!response.ok) {
-            throw new Error("Failed to get expense");
-        }
+} catch (error) {
 
+    console.error(error);
 
-        const expense = await response.json();
-
-
-        // Put existing data into form
-        amount.value = expense.amount;
-
-        description.value = expense.description;
-
-        category.value = expense.category;
-
-
-        // Store ID
-        editId = id;
-
-
-        // Change button text
-        submitButton.textContent = "Update Expense";
-
-
-        // Scroll to form
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        showMessage(
-            "Unable to load expense.",
-            "danger"
-        );
-
-    }
+    alert(error.message);
 
 }
 
 
-// --------------------------------------------------
-// SHOW MESSAGE
-// --------------------------------------------------
-
-function showMessage(text, type) {
-
-    message.textContent = text;
-
-    message.className = `alert alert-${type}`;
-
-    
-    setTimeout(function () {
-
-        message.className = "alert d-none";
-
-    }, 3000);
-
 }
+
+
+loadItems();
