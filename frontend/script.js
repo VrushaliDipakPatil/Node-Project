@@ -1,129 +1,380 @@
 const form = document.getElementById("expenseForm");
+
 const amount = document.getElementById("amount");
 const description = document.getElementById("description");
 const category = document.getElementById("category");
+
 const expenseList = document.getElementById("expenseList");
 
+const submitButton = document.getElementById("submitButton");
+
+const message = document.getElementById("message");
+
+
+// Backend URL
+const API_URL = "http://localhost:3000/expenses";
+
+
+// Used when editing an expense
 let editId = null;
 
-// Load Data
-window.onload = function () {
-    displayExpenses();
-};
 
-// Form Submit
-form.addEventListener("submit", function (e) {
-
-    e.preventDefault();
-
-    const expense = {
-        id: editId ? editId : Date.now(),
-        amount: amount.value,
-        description: description.value,
-        category: category.value
-    };
-
-    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-
-    if (editId) {
-
-        expenses = expenses.map(item =>
-            item.id === editId ? expense : item
-        );
-
-        editId = null;
-
-    } else {
-
-        expenses.push(expense);
-
-    }
-
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-
-    form.reset();
+// Load expenses when page opens
+document.addEventListener("DOMContentLoaded", function () {
 
     displayExpenses();
 
 });
 
 
-// Display Expenses
+// --------------------------------------------------
+// FORM SUBMIT
+// --------------------------------------------------
 
-function displayExpenses() {
+form.addEventListener("submit", async function (event) {
 
-    expenseList.innerHTML = "";
+    event.preventDefault();
 
-    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-    expenses.forEach(expense => {
+    const expense = {
 
-        const li = document.createElement("li");
+        amount: Number(amount.value),
 
-        li.className = "list-group-item";
+        description: description.value,
 
-        li.innerHTML = `
+        category: category.value
 
-            <span>
-                <strong>₹${expense.amount}</strong>
-                -
-                ${expense.category}
-                -
-                ${expense.description}
-            </span>
+    };
 
-            <div class="action-buttons">
 
-                <button
-                    class="btn btn-warning btn-sm"
-                    onclick="editExpense(${expense.id})">
-                    Edit
-                </button>
+    try {
 
-                <button
-                    class="btn btn-danger btn-sm"
-                    onclick="deleteExpense(${expense.id})">
-                    Delete
-                </button>
+        // EDIT EXPENSE
+        if (editId !== null) {
 
-            </div>
+            const response = await fetch(
+                `${API_URL}/${editId}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(expense)
+                }
+            );
+
+
+            if (!response.ok) {
+                throw new Error("Failed to update expense");
+            }
+
+
+            showMessage(
+                "Expense updated successfully!",
+                "success"
+            );
+
+
+            editId = null;
+
+            submitButton.textContent = "Add Expense";
+
+        }
+
+
+        // ADD EXPENSE
+        else {
+
+            const response = await fetch(
+               `${API_URL}/add`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(expense)
+                }
+            );
+
+
+            if (!response.ok) {
+                throw new Error("Failed to add expense");
+            }
+
+
+            showMessage(
+                "Expense added successfully!",
+                "success"
+            );
+
+        }
+
+
+        // Clear form
+        form.reset();
+
+
+        // Reload expenses
+        displayExpenses();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Something went wrong. Please try again.",
+            "danger"
+        );
+
+    }
+
+});
+
+
+// --------------------------------------------------
+// GET ALL EXPENSES
+// --------------------------------------------------
+
+async function displayExpenses() {
+
+    try {
+
+        const response = await fetch(API_URL);
+
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch expenses");
+        }
+
+
+        const expenses = await response.json();
+
+
+        expenseList.innerHTML = "";
+
+
+        // If there are no expenses
+        if (expenses.length === 0) {
+
+            expenseList.innerHTML = `
+                <li class="list-group-item text-center text-muted">
+                    No expenses found.
+                </li>
+            `;
+
+            return;
+        }
+
+
+        // Display every expense
+        expenses.forEach(function (expense) {
+
+            const li = document.createElement("li");
+
+            li.className = "list-group-item";
+
+
+            li.innerHTML = `
+
+                <div class="expense-details">
+
+                    <span class="expense-amount">
+                        ₹${expense.amount}
+                    </span>
+
+                    <span class="expense-category">
+                        ${expense.category}
+                    </span>
+
+                    <span class="expense-description">
+                        ${expense.description}
+                    </span>
+
+                </div>
+
+
+                <div class="action-buttons">
+
+                    <button
+                        class="btn btn-warning btn-sm"
+                        onclick="editExpense(${expense.id})"
+                    >
+                        Edit
+                    </button>
+
+
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="deleteExpense(${expense.id})"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            `;
+
+
+            expenseList.appendChild(li);
+
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        expenseList.innerHTML = `
+
+            <li class="list-group-item text-center text-danger">
+
+                Unable to load expenses.
+
+                <br>
+
+                Make sure your backend server is running.
+
+            </li>
 
         `;
 
-        expenseList.appendChild(li);
-
-    });
+    }
 
 }
 
 
-// Delete
+// --------------------------------------------------
+// DELETE EXPENSE
+// --------------------------------------------------
 
-function deleteExpense(id) {
+async function deleteExpense(id) {
 
-    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this expense?"
+    );
 
-    expenses = expenses.filter(item => item.id !== id);
 
-    localStorage.setItem("expenses", JSON.stringify(expenses));
+    if (!confirmDelete) {
+        return;
+    }
 
-    displayExpenses();
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        if (!response.ok) {
+            throw new Error("Failed to delete expense");
+        }
+
+
+        showMessage(
+            "Expense deleted successfully!",
+            "success"
+        );
+
+
+        displayExpenses();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Unable to delete expense.",
+            "danger"
+        );
+
+    }
 
 }
 
 
-// Edit
+// --------------------------------------------------
+// EDIT EXPENSE
+// --------------------------------------------------
 
-function editExpense(id) {
+async function editExpense(id) {
 
-    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+    try {
 
-    const expense = expenses.find(item => item.id === id);
+        const response = await fetch(
+            `${API_URL}/${id}`
+        );
 
-    amount.value = expense.amount;
-    description.value = expense.description;
-    category.value = expense.category;
 
-    editId = id;
+        if (!response.ok) {
+            throw new Error("Failed to get expense");
+        }
+
+
+        const expense = await response.json();
+
+
+        // Put existing data into form
+        amount.value = expense.amount;
+
+        description.value = expense.description;
+
+        category.value = expense.category;
+
+
+        // Store ID
+        editId = id;
+
+
+        // Change button text
+        submitButton.textContent = "Update Expense";
+
+
+        // Scroll to form
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Unable to load expense.",
+            "danger"
+        );
+
+    }
+
+}
+
+
+// --------------------------------------------------
+// SHOW MESSAGE
+// --------------------------------------------------
+
+function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className = `alert alert-${type}`;
+
+    
+    setTimeout(function () {
+
+        message.className = "alert d-none";
+
+    }, 3000);
 
 }

@@ -25,6 +25,20 @@ const fetchExpenses = async (req, res) => {
   }
 };
 
+const fetchExpenseById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const expense = await Expenses.findByPk(id);
+        if (!expense) {
+            return res.status(404).send({ message: "Expense not found" });
+        }
+        res.status(200).send(expense);
+    } catch (error) {
+        console.error("Error fetching expense:", error);
+        res.status(500).send({ message: "Error fetching expense" });
+    }
+};
+
 const updateExpense = async (req, res) => {
   try {
     const { id } = req.params;
@@ -59,6 +73,7 @@ const deleteExpense = async (req, res) => {
 module.exports = {
   addExpense,
   fetchExpenses,
+  fetchExpenseById,
   updateExpense,
   deleteExpense
 };
