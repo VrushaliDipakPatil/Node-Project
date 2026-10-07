@@ -165,7 +165,7 @@ items.forEach(function (item) {
 
 
             <div class="detail">
-                <strong>Available:</strong>
+                <strong>Quantity:</strong>
                 ${item.quantity}
             </div>
 
